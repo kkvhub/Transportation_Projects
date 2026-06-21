@@ -64,6 +64,11 @@ st.markdown("""
 h1, h2, h3 { color: #7a4b1e !important; font-family: Georgia, 'Times New Roman', serif; }
 [data-testid="stCaptionContainer"], small { color: #6b5c44 !important; }
 
+/* Main-body markdown labels (e.g. "School ranking") + chat message text were
+   white on the cloud's dark theme -> force dark so they're readable on beige. */
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] * { color: #423a2f !important; }
+.stChatMessage, .stChatMessage p, .stChatMessage span, .stChatMessage div { color: #423a2f !important; }
+
 /* Chat message bubbles */
 .stChatMessage { background-color: #fbf4e4 !important; border: 1px solid #e6d6b8;
                  border-radius: 12px; }
@@ -85,6 +90,21 @@ div[data-testid="stChatInput"] textarea::placeholder { color: #8a7a60 !important
 a { color: #9c5a1c; }
 .side-refs { font-size:14px; }
 .side-refs a { display:block; margin:4px 0; text-decoration:none; font-weight:600; }
+
+/* Custom (CSS-controlled) ranking table + bar charts so they're readable on any
+   Streamlit theme — replaces st.dataframe / st.bar_chart which follow the theme. */
+.cb-table { width:100%; border-collapse:collapse; font-size:14px; color:#423a2f;
+            background:#fbf4e4; margin:4px 0 10px; }
+.cb-table th { background:#e3d0a8; color:#5a4326; text-align:left; padding:6px 10px;
+               border:1px solid #d9c39a; }
+.cb-table td { padding:6px 10px; border:1px solid #e6d6b8; }
+.cb-bars { margin:4px 0 10px; }
+.cb-row { display:flex; align-items:center; gap:8px; margin:3px 0; font-size:13px;
+          color:#423a2f; }
+.cb-lab { width:95px; text-align:right; flex:0 0 auto; }
+.cb-track { flex:1; background:#eaddc0; border-radius:4px; height:14px; overflow:hidden; }
+.cb-fill { display:block; height:100%; background:#c8843c; }
+.cb-val { width:62px; text-align:right; flex:0 0 auto; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -186,6 +206,32 @@ if "history" not in st.session_state:
     st.session_state["history"] = []
 
 
+def _html_table(records):
+    """Render a list of dicts as a beige HTML table (theme-proof)."""
+    if not records:
+        return ""
+    cols = list(records[0].keys())
+    head = "".join(f"<th>{c}</th>" for c in cols)
+    body = ""
+    for r in records:
+        body += "<tr>" + "".join(f"<td>{r[c]}</td>" for c in cols) + "</tr>"
+    return f'<table class="cb-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>'
+
+
+def _html_bars(d):
+    """Render a {label: value} dict as simple horizontal CSS bars (theme-proof)."""
+    if not d:
+        return ""
+    mx = max(d.values()) or 1
+    rows = ""
+    for k, v in d.items():
+        w = max(2, int(v / mx * 100))
+        rows += (f'<div class="cb-row"><span class="cb-lab">{k}</span>'
+                 f'<span class="cb-track"><span class="cb-fill" style="width:{w}%"></span></span>'
+                 f'<span class="cb-val">{int(v):,}</span></div>')
+    return f'<div class="cb-bars">{rows}</div>'
+
+
 def run_question(q):
     """Run one question end-to-end and append the turn to history."""
     with st.spinner("Analysing crashes…"):
@@ -233,12 +279,11 @@ for i, turn in enumerate(hist):
         meta = res.get("meta", {})
         if meta.get("ranking"):
             st.markdown("**School ranking**")
-            st.dataframe(pd.DataFrame(meta["ranking"]), use_container_width=True,
-                         hide_index=True)
+            st.markdown(_html_table(meta["ranking"]), unsafe_allow_html=True)
         for key in ("by_year", "by_hour", "by_dow", "by_month", "breakdown"):
             if meta.get(key):
                 st.markdown(f"**{key.replace('_', ' ').title()}**")
-                st.bar_chart(pd.Series(meta[key]))
+                st.markdown(_html_bars(meta[key]), unsafe_allow_html=True)
                 break
         if turn["map_html"] and is_last:
             st.components.v1.html(turn["map_html"], height=460, scrolling=False)
