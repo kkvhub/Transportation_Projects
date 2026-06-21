@@ -1,0 +1,176 @@
+{
+  "_meta": {
+    "project": "Tempe Crash Data Chatbot",
+    "purpose": "Authoritative data dictionary. The LLM uses this to map natural-language questions to fields, allowed values, and operations. Anything not described here is OUT OF SCOPE and must return 'no data available'.",
+    "study_area": "City of Tempe, Maricopa County, Arizona, USA",
+    "time_coverage": {"start_year": 2012, "end_year": 2025},
+    "last_updated": "2026-06-20",
+    "primary_query_dataset": "school_crashes_tempe.csv",
+    "row_grain": "one row = one reported crash"
+  },
+
+  "datasets": {
+    "school_crashes_tempe.csv": {
+      "rows": 56250,
+      "description": "Every Tempe crash tagged with nearest school, distance, and engineered time/condition features. Primary table for the chatbot — has coordinates for mapping.",
+      "has_coordinates": true
+    },
+    "crash_data_tempe.csv": {
+      "rows": 56563,
+      "description": "Raw ADOT/MCDOT crash records with full attributes (street names, injury severity, driver demographics, violations).",
+      "has_coordinates": true
+    },
+    "feature_table_tempe.csv": {
+      "rows": 56563,
+      "description": "Model-ready engineered features (KSI label, time parts, distances, road class).",
+      "has_coordinates": true
+    },
+    "school_crash_summary_tempe.csv": {
+      "rows": "~107",
+      "description": "Per-school aggregated crash and KSI counts (precomputed). Use for school ranking questions.",
+      "has_coordinates": false
+    },
+    "schools_tempe_clean.json": {
+      "features": 188,
+      "description": "Verified Tempe-area school points (GeoJSON). 159 names verified, 29 carry district/organization names. Use for plotting schools and re-running the school-crash join.",
+      "has_coordinates": true
+    }
+  },
+
+  "fields": {
+    "Year": {
+      "type": "integer", "queryable": true, "groupable": true,
+      "range": [2012, 2025],
+      "synonyms": ["year", "annual", "per year", "which year"],
+      "description": "Calendar year of crash."
+    },
+    "crash_hour": {
+      "type": "integer", "queryable": true, "groupable": true,
+      "range": [0, 23],
+      "synonyms": ["time of day", "hour", "what time", "when"],
+      "description": "Hour of day (0-23). Use for 'most dangerous time' questions."
+    },
+    "crash_dow": {
+      "type": "integer", "queryable": true, "groupable": true,
+      "range": [0, 6],
+      "synonyms": ["day of week", "weekday", "which day"],
+      "description": "Day of week (0=Mon ... 6=Sun)."
+    },
+    "crash_month": {
+      "type": "integer", "queryable": true, "groupable": true,
+      "range": [1, 12],
+      "synonyms": ["month", "which month", "seasonal"],
+      "description": "Month of crash (1-12)."
+    },
+    "is_weekend": {
+      "type": "boolean(0/1)", "queryable": true, "groupable": true,
+      "values": [0, 1],
+      "synonyms": ["weekend", "weekday vs weekend"],
+      "description": "1 = Saturday/Sunday."
+    },
+    "is_dark": {
+      "type": "boolean(0/1)", "queryable": true, "groupable": true,
+      "values": [0, 1],
+      "synonyms": ["dark", "night", "nighttime", "after dark"],
+      "description": "1 = dark lighting condition at time of crash."
+    },
+    "KSI": {
+      "type": "boolean(0/1)", "queryable": true, "groupable": true,
+      "values": [0, 1], "nulls": 92,
+      "synonyms": ["killed or seriously injured", "severe", "serious", "worst crashes", "fatal or serious"],
+      "description": "1 = crash resulted in a killed or seriously injured outcome. Core severity metric."
+    },
+    "Injuryseverity": {
+      "type": "categorical", "queryable": true, "groupable": true, "source": "crash_data_tempe.csv",
+      "values": ["No Injury", "Possible Injury", "Suspected Minor Injury", "Non Incapacitating Injury", "Suspected Serious Injury", "Incapacitating Injury", "Fatal", "Unknown"],
+      "synonyms": ["severity", "how bad", "fatal", "injury level"],
+      "description": "Reported injury severity. 'Fatal' and 'Incapacitating/Suspected Serious' map to KSI."
+    },
+    "Totalinjuries": {"type": "integer", "queryable": true, "range": [0, 11], "source": "crash_data_tempe.csv", "synonyms": ["injuries", "number injured"]},
+    "Totalfatalities": {"type": "integer", "queryable": true, "range": [0, 3], "source": "crash_data_tempe.csv", "synonyms": ["deaths", "fatalities", "killed"]},
+    "Lightcondition": {
+      "type": "categorical", "queryable": true, "groupable": true,
+      "values": ["Daylight", "Dark Lighted", "Dark Not Lighted", "Dark Unknown Lighting", "Dusk", "Dawn"],
+      "dirty_values": ["51", "Unknown 51"],
+      "synonyms": ["lighting", "light condition"],
+      "description": "Lighting at time of crash."
+    },
+    "Weather": {
+      "type": "categorical", "queryable": true, "groupable": true,
+      "values": ["Clear", "Cloudy", "Rain", "Fog Smog Smoke", "Blowing Sand Soil Dirt", "Severe Crosswinds", "Sleet Hail Freezing Rain Or Drizzle", "Other", "Unknown"],
+      "synonyms": ["weather", "raining", "in the rain", "conditions"],
+      "description": "Weather at time of crash."
+    },
+    "SurfaceCondition": {
+      "type": "categorical", "queryable": true, "groupable": true,
+      "values": ["Dry", "Wet", "Ice Frost", "Snow", "Water Standing Moving", "Mud Dirt Gravel", "Oil", "Other", "Unknown"],
+      "synonyms": ["road surface", "wet road", "icy"],
+      "description": "Road surface condition."
+    },
+    "Collisionmanner": {
+      "type": "categorical", "queryable": true, "groupable": true,
+      "values": ["Rear End", "ANGLE (Front To Side)(Other Than Left Turn)", "Left Turn", "Single Vehicle", "Sideswipe Same Direction", "Sideswipe Opposite Direction", "Head On", "Rear To Side", "Rear To Rear", "U Turn", "Other", "Unknown"],
+      "dirty_values": ["10", "Angle - Other Than Left Turn 2"],
+      "synonyms": ["collision type", "crash type", "manner", "rear-end", "head on"],
+      "description": "How the vehicles collided."
+    },
+    "JunctionRelation": {
+      "type": "categorical", "queryable": true, "groupable": true,
+      "values": ["Intersection Non Interchange", "Not Junction Related", "Intersection Related Non Interchange", "Driveway", "Intersection Interchange", "Entrance Exit Ramp Interchange", "Railway Grade Crossing", "Alley Access Related", "Unknown"],
+      "dirty_values": ["255", "16", "117", "201", "202", "203", "205", "206"],
+      "synonyms": ["intersection", "junction", "at an intersection"],
+      "description": "Relationship of crash to a junction/intersection."
+    },
+    "Unittype_One": {"type": "categorical", "queryable": true, "groupable": true, "values": ["Driver", "Pedestrian", "Pedalcyclist", "Driverless"], "synonyms": ["road user", "pedestrian", "cyclist", "bike"], "description": "Type of first unit involved."},
+    "Unittype_Two": {"type": "categorical", "queryable": true, "groupable": true, "values": ["Driver", "Pedestrian", "Pedalcyclist", "Driverless"], "nulls": 3730, "description": "Type of second unit (null = single-unit crash)."},
+    "AlcoholUse_Drv1": {"type": "categorical", "queryable": true, "groupable": true, "values": ["Alcohol", "No Apparent Influence"], "synonyms": ["drunk", "alcohol", "dui", "impaired"], "description": "Alcohol involvement, driver 1."},
+    "DrugUse_Drv1": {"type": "categorical", "queryable": true, "groupable": true, "values": ["Drugs", "No Apparent Influence"], "synonyms": ["drugs", "drug use"], "description": "Drug involvement, driver 1."},
+    "Violation1_Drv1": {"type": "categorical", "queryable": true, "groupable": true, "source": "crash_data_tempe.csv", "example_values": ["Speed To Fast For Conditions", "Failed To Yield Right Of Way", "Unsafe Lane Change", "Followed Too Closely"], "synonyms": ["violation", "cause", "fault", "speeding"], "description": "Primary violation by driver 1. Many distinct values."},
+    "Age_Drv1": {"type": "integer", "queryable": true, "source": "crash_data_tempe.csv", "valid_range": [14, 100], "dirty_values": [255], "synonyms": ["age", "driver age", "young driver", "elderly"], "description": "Age of driver 1. NOTE: 255 and values <14 are data errors — filter out."},
+    "Gender_Drv1": {"type": "categorical", "queryable": true, "groupable": true, "source": "crash_data_tempe.csv", "values": ["Male", "Female", "Unknown"], "synonyms": ["gender", "sex", "male", "female"]},
+    "road_func_class": {"type": "categorical", "queryable": true, "groupable": true, "example_values": ["98-Non-ADOT Rte", "75-Minor Ramps"], "nulls": 15, "synonyms": ["road type", "road class", "functional class"]},
+    "speed_limit_proxy": {"type": "integer", "queryable": true, "source": "feature_table_tempe.csv", "synonyms": ["speed limit", "speed"], "description": "PROXY speed limit derived from road class — NOT actual posted limit. Caveat in answers."},
+    "StreetName": {"type": "text", "queryable": true, "groupable": true, "source": "crash_data_tempe.csv", "n_unique": 548, "top_values": ["Rural Rd", "Baseline Rd", "University Dr", "Broadway Rd", "McClintock Dr"], "synonyms": ["street", "road", "on which street", "where"], "description": "Primary street of crash. Use for 'crashes on X street'."},
+    "CrossStreet": {"type": "text", "queryable": true, "source": "crash_data_tempe.csv", "synonyms": ["cross street", "intersection of"], "description": "Cross street. Combine with StreetName for intersection queries."},
+    "nearest_school": {"type": "text", "queryable": true, "groupable": true, "n_unique": 106, "special_value": "Unknown", "synonyms": ["school", "near school", "which school"], "description": "Name of nearest school within 1.0 mi. 'Unknown' = no school within 1 mile (11,704 rows). Use with dist_school_mi for radius questions."},
+    "dist_school_mi": {"type": "float", "queryable": true, "range": [0.005, 1.0], "synonyms": ["distance to school", "within X miles of school", "school radius"], "description": "Distance from crash to nearest school in miles. Capped at 1.0. Use for '0.25 mi radius' filters."},
+    "dist_school_ft": {"type": "float", "queryable": true, "description": "Same distance in feet."},
+    "school_zone": {"type": "categorical", "queryable": true, "groupable": true, "values": ["0-0.5 mi", "0.5-1 mi"], "synonyms": ["school zone band"]},
+    "dist_junction_ft": {"type": "float", "queryable": true, "synonyms": ["distance to intersection", "near junction"]},
+    "dist_busstop_ft": {"type": "float", "queryable": true, "synonyms": ["distance to bus stop", "near transit"]},
+    "Latitude": {"type": "float", "queryable": false, "map_field": true, "description": "Latitude for mapping."},
+    "Longitude": {"type": "float", "queryable": false, "map_field": true, "description": "Longitude for mapping."}
+  },
+
+  "supported_operations": ["count", "count_by_group (groupby + count)", "top_n / ranking", "filter (equality, range, distance threshold)", "percentage / rate", "min/max/mean of numeric field", "return matching rows for map"],
+
+  "map_contract": {
+    "every_answer_can_map": true,
+    "map_fields": ["Latitude", "Longitude"],
+    "note": "Any query returns the matching rows' lat/long so results can be plotted (clustered markers + optional school buffer)."
+  },
+
+  "out_of_scope": {
+    "rule": "If a question cannot be answered from the fields above, respond exactly: 'No data available for that.'",
+    "examples": [
+      "Cities other than Tempe (Phoenix, Mesa, Chandler, Scottsdale)",
+      "Dates before 2012 or after 2025",
+      "Future predictions / forecasts (the ML model is separate, not wired into chat in v1)",
+      "Dollar/economic cost of crashes",
+      "Real-time or live traffic",
+      "Specific individuals' identities, names, license plates",
+      "Vehicle make/model/color (not in dataset)",
+      "Pedestrian/bike counts or traffic volume per road (AADT not yet joined)",
+      "Actual posted speed limits (only a proxy exists)",
+      "Causal claims ('what causes crashes') — only patterns/correlations are reported"
+    ]
+  },
+
+  "data_quality_notes": [
+    "Several categorical columns contain stray numeric codes (e.g. '51', '255', '10') — treat as 'Unknown' / filter out.",
+    "Age_Drv1 includes sentinel 255 and implausible low values — restrict to 14-100 for age questions.",
+    "nearest_school 'Unknown' (11,704 rows) means no school within 1.0 mi, NOT a missing name. Re-running the join with schools_tempe_clean.json (and optionally a wider radius) is needed to reduce it.",
+    "'Counts' reflect crash frequency, not risk per traffic volume. State this when answering 'most dangerous' questions.",
+    "Only police-reported crashes are included; minor incidents undercounted."
+  ]
+}

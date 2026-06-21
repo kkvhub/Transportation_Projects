@@ -1,0 +1,3 @@
+# Build-time only (NOT needed to run the deployed app).
+matplotlib>=3.7     # regenerate the landing snapshot (make_overview_snapshot.py)
+google-genai>=0.3   # optional: enable Gemini Flash parsing (needs GEMINI_API_KEY)

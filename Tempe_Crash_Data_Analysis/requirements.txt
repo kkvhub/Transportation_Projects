@@ -1,0 +1,6 @@
+# Runtime dependencies for the live chatbot (Streamlit Community Cloud installs these).
+# No API key needed: the app runs on the offline rule parser by default.
+pandas>=2.0
+numpy>=1.24
+folium>=0.15        # interactive Leaflet maps (free, no API key)
+streamlit>=1.33     # the chat + map web UI
