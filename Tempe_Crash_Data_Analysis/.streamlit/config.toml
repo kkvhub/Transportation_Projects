@@ -1,0 +1,11 @@
+# Beige theme for the deployed app (Streamlit reads this automatically).
+[theme]
+base = "light"
+primaryColor = "#9c5a1c"
+backgroundColor = "#f4ead5"
+secondaryBackgroundColor = "#fbf4e4"
+textColor = "#423a2f"
+font = "serif"
+
+[server]
+headless = true
