@@ -46,15 +46,42 @@ st.set_page_config(page_title="Tempe Crash Chatbot", page_icon="🚗",
 # --- Beige theme -----------------------------------------------------------
 st.markdown("""
 <style>
-.stApp { background-color: #f4ead5; color: #423a2f; }
-[data-testid="stSidebar"] { background-color: #efe2c6; }
+/* Force colours explicitly so the look is identical whether or not Streamlit
+   Cloud picks up .streamlit/config.toml (it doesn't when the app is in a
+   subfolder, which previously left invisible text on the default dark theme). */
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+    background-color: #f4ead5 !important; color: #423a2f !important; }
 [data-testid="stHeader"] { background: transparent; }
-h1, h2, h3 { color: #7a4b1e; font-family: Georgia, 'Times New Roman', serif; }
-.stChatMessage { background-color: #fbf4e4; border: 1px solid #e6d6b8; border-radius: 12px; }
-div[data-testid="stChatInput"] textarea { background-color: #fbf4e4; }
-.stButton>button { background-color:#fbf4e4; color:#5a4326; border:1px solid #d9c39a;
-                   border-radius:8px; text-align:left; font-size:13px; }
-.stButton>button:hover { background-color:#e3d0a8; color:#3d2c14; }
+
+/* Sidebar: beige bg, dark text on everything, brown headings, orange links */
+[data-testid="stSidebar"] { background-color: #efe2c6 !important; }
+[data-testid="stSidebar"] * { color: #423a2f !important; }
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 { color: #7a4b1e !important; }
+[data-testid="stSidebar"] a { color: #9c5a1c !important; }
+
+/* Headings + general text */
+h1, h2, h3 { color: #7a4b1e !important; font-family: Georgia, 'Times New Roman', serif; }
+[data-testid="stCaptionContainer"], small { color: #6b5c44 !important; }
+
+/* Chat message bubbles */
+.stChatMessage { background-color: #fbf4e4 !important; border: 1px solid #e6d6b8;
+                 border-radius: 12px; }
+
+/* Bottom chat-input bar (was a black strip with invisible text on cloud) */
+[data-testid="stBottom"], [data-testid="stBottomBlockContainer"] {
+    background-color: #f4ead5 !important; }
+div[data-testid="stChatInput"] { background-color: #fbf4e4 !important;
+    border: 1px solid #d9c39a; border-radius: 10px; }
+div[data-testid="stChatInput"] textarea {
+    background-color: #fbf4e4 !important; color: #423a2f !important; }
+div[data-testid="stChatInput"] textarea::placeholder { color: #8a7a60 !important; }
+
+/* Buttons */
+.stButton>button { background-color:#fbf4e4 !important; color:#5a4326 !important;
+    border:1px solid #d9c39a; border-radius:8px; text-align:left; font-size:13px; }
+.stButton>button:hover { background-color:#e3d0a8 !important; color:#3d2c14 !important; }
+
 a { color: #9c5a1c; }
 .side-refs { font-size:14px; }
 .side-refs a { display:block; margin:4px 0; text-decoration:none; font-weight:600; }
