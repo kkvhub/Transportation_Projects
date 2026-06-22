@@ -98,13 +98,15 @@ a { color: #9c5a1c; }
 .cb-table th { background:#e3d0a8; color:#5a4326; text-align:left; padding:6px 10px;
                border:1px solid #d9c39a; }
 .cb-table td { padding:6px 10px; border:1px solid #e6d6b8; }
-.cb-bars { margin:4px 0 10px; }
-.cb-row { display:flex; align-items:center; gap:8px; margin:3px 0; font-size:13px;
-          color:#423a2f; }
-.cb-lab { width:95px; text-align:right; flex:0 0 auto; }
-.cb-track { flex:1; background:#eaddc0; border-radius:4px; height:14px; overflow:hidden; }
-.cb-fill { display:block; height:100%; background:#c8843c; }
-.cb-val { width:62px; text-align:right; flex:0 0 auto; }
+.cb-bars { display:flex; align-items:flex-end; gap:6px; height:230px;
+           padding:8px 4px 0; margin:4px 0 10px; overflow-x:auto;
+           border-bottom:2px solid #d9c39a; }
+.cb-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+          flex:1 1 0; min-width:26px; height:100%; }
+.cb-num { font-size:11px; color:#5a4326; margin-bottom:3px; white-space:nowrap; }
+.cb-bar { width:70%; background:#c8843c; border-radius:3px 3px 0 0; }
+.cb-cap { font-size:11px; color:#423a2f; margin-top:4px; text-align:center;
+          white-space:nowrap; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -219,17 +221,18 @@ def _html_table(records):
 
 
 def _html_bars(d):
-    """Render a {label: value} dict as simple horizontal CSS bars (theme-proof)."""
+    """Render a {label: value} dict as VERTICAL (column) CSS bars (theme-proof)."""
     if not d:
         return ""
     mx = max(d.values()) or 1
-    rows = ""
+    cols = ""
     for k, v in d.items():
-        w = max(2, int(v / mx * 100))
-        rows += (f'<div class="cb-row"><span class="cb-lab">{k}</span>'
-                 f'<span class="cb-track"><span class="cb-fill" style="width:{w}%"></span></span>'
-                 f'<span class="cb-val">{int(v):,}</span></div>')
-    return f'<div class="cb-bars">{rows}</div>'
+        h = max(2, int(v / mx * 100))          # bar height as % of plot area
+        cols += (f'<div class="cb-col">'
+                 f'<span class="cb-num">{int(v):,}</span>'
+                 f'<div class="cb-bar" style="height:{h}%"></div>'
+                 f'<span class="cb-cap">{k}</span></div>')
+    return f'<div class="cb-bars">{cols}</div>'
 
 
 def run_question(q):
