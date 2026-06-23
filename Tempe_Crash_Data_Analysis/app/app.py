@@ -73,14 +73,19 @@ h1, h2, h3 { color: #7a4b1e !important; font-family: Georgia, 'Times New Roman',
 .stChatMessage { background-color: #fbf4e4 !important; border: 1px solid #e6d6b8;
                  border-radius: 12px; }
 
-/* Bottom chat-input bar (was a black strip with invisible text on cloud) */
-[data-testid="stBottom"], [data-testid="stBottomBlockContainer"] {
-    background-color: #f4ead5 !important; }
-div[data-testid="stChatInput"] { background-color: #fbf4e4 !important;
-    border: 1px solid #d9c39a; border-radius: 10px; }
+/* Bottom chat-input area: remove the dark wrapper and make a clean WHITE input
+   box with an orange border so it clearly contrasts with the beige page. */
+[data-testid="stBottom"], [data-testid="stBottom"] > div,
+[data-testid="stBottomBlockContainer"] { background-color: #f4ead5 !important; }
+div[data-testid="stChatInput"] { background-color: #ffffff !important;
+    border: 2px solid #c8843c !important; border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12); }
 div[data-testid="stChatInput"] textarea {
-    background-color: #fbf4e4 !important; color: #423a2f !important; }
+    background-color: #ffffff !important; color: #423a2f !important;
+    caret-color: #9c5a1c !important; }   /* visible blinking cursor */
 div[data-testid="stChatInput"] textarea::placeholder { color: #8a7a60 !important; }
+/* Visible section separators in the sidebar */
+[data-testid="stSidebar"] hr { border-color: #c9a979 !important; margin: 12px 0; }
 
 /* Buttons */
 .stButton>button { background-color:#fbf4e4 !important; color:#5a4326 !important;
@@ -181,6 +186,7 @@ with st.sidebar:
     if st.button("📖  Data dictionary", key="dd_side", use_container_width=True):
         show_data_dictionary()
 
+    st.divider()
     st.markdown("**Sample questions** — click to run:")
     for q in SAMPLE_QUESTIONS:
         st.button(q, key=f"side_{q}", on_click=_set_q, args=(q,), use_container_width=True)
