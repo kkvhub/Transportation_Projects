@@ -73,17 +73,26 @@ h1, h2, h3 { color: #7a4b1e !important; font-family: Georgia, 'Times New Roman',
 .stChatMessage { background-color: #fbf4e4 !important; border: 1px solid #e6d6b8;
                  border-radius: 12px; }
 
-/* Bottom chat-input area: remove the dark wrapper and make a clean WHITE input
-   box with an orange border so it clearly contrasts with the beige page. */
+/* Bottom chat-input area. The dark box is BaseWeb's input wrapper, so we whiten
+   the whole input subtree (container + base-input + textarea) and make the page
+   strip beige, with an orange border so the box contrasts with the beige page. */
 [data-testid="stBottom"], [data-testid="stBottom"] > div,
 [data-testid="stBottomBlockContainer"] { background-color: #f4ead5 !important; }
-div[data-testid="stChatInput"] { background-color: #ffffff !important;
-    border: 2px solid #c8843c !important; border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+div[data-testid="stChatInput"],
+div[data-testid="stChatInput"] > div,
+div[data-testid="stChatInput"] [data-baseweb="base-input"],
+div[data-testid="stChatInput"] [data-baseweb="textarea"] {
+    background-color: #ffffff !important; }
+div[data-testid="stChatInput"] { border: 2px solid #c8843c !important;
+    border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
 div[data-testid="stChatInput"] textarea {
     background-color: #ffffff !important; color: #423a2f !important;
     caret-color: #9c5a1c !important; }   /* visible blinking cursor */
 div[data-testid="stChatInput"] textarea::placeholder { color: #8a7a60 !important; }
+/* Send button: orange so it reads on the white box */
+[data-testid="stChatInputSubmitButton"] { background-color: #c8843c !important;
+    color: #ffffff !important; }
+[data-testid="stChatInputSubmitButton"] svg { fill: #ffffff !important; }
 /* Visible section separators in the sidebar */
 [data-testid="stSidebar"] hr { border-color: #c9a979 !important; margin: 12px 0; }
 
