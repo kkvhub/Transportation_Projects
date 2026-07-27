@@ -86,7 +86,10 @@ def inject_theme() -> None:
           border: 1px solid #13221a; box-shadow: 0 18px 45px rgba(7,17,13,.20);
         }
         .hero h1 { color: white; margin: 0 0 10px 0; font-size: 2.35rem; line-height: 1.08; }
-        .hero p { color: #dce7df; margin: 0; max-width: 820px; font-size: 1.03rem; }
+        .hero p,
+        div[data-testid="stAppViewContainer"] .hero p {
+          color: #dce7df !important; margin: 0; max-width: 820px; font-size: 1.03rem;
+        }
         .pill {
           display: inline-block; background: var(--accent); color: #07110d; border-radius: 999px;
           padding: 4px 10px; font-weight: 700; font-size: .78rem; margin-bottom: 14px;
@@ -97,7 +100,10 @@ def inject_theme() -> None:
           min-height: 112px;
         }
         .step-card strong { display:block; color:#07110d; margin-bottom: 6px; }
-        .step-card p { margin: 0; color: var(--muted); font-size: .92rem; }
+        .step-card p,
+        div[data-testid="stAppViewContainer"] .step-card p {
+          margin: 0; color: var(--muted) !important; font-size: .92rem;
+        }
         .sidebar-title { font-size: 1.25rem; font-weight: 800; margin: .5rem 0 .15rem; color: white; }
         .sidebar-muted { color: #b8c8bf; font-size: .9rem; line-height: 1.4; }
         .side-box {
