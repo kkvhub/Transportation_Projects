@@ -21,6 +21,8 @@ RUNNER = CV_ROOT / "ml_prototype" / "engineering_hybrid_checker_with_cropper.py"
 UPLOAD_DIR = CV_ROOT / "streamlit_uploads"
 OUTPUT_ROOT = CV_ROOT / "outputs" / "streamlit_cropper_runs"
 DEFAULT_MODEL = CV_ROOT / "plan_profile_curve_table_results" / "runs" / "retrain_v2_yolo11n_1280" / "weights" / "best.pt"
+DEFAULT_OCR_MODE = "auto"
+DEFAULT_ML_DPI = 400
 
 
 st.set_page_config(page_title="P&P Design Checker", layout="wide")
@@ -36,28 +38,83 @@ def inject_theme() -> None:
           --line: #dbe5df;
           --accent: #b8ff3d;
           --soft: #f4f8f5;
+          --warning: #f59e0b;
+          --danger: #dc2626;
         }
-        .stApp { background: linear-gradient(180deg, #f7faf8 0%, #eef5f0 100%); color: var(--ink); }
-        .block-container { padding-top: 2rem; max-width: 1180px; }
+        .stApp { background: #eef5f0; color: var(--ink); }
+        .block-container { padding-top: 1.4rem; max-width: 1240px; }
         h1, h2, h3 { color: var(--ink); letter-spacing: 0 !important; }
-        .hero {
-          background: #07110d; color: white; border-radius: 8px; padding: 28px 30px;
-          border: 1px solid #13221a; box-shadow: 0 18px 45px rgba(7,17,13,.18);
+        section[data-testid="stSidebar"] {
+          background: #07110d;
+          border-right: 1px solid #13221a;
         }
-        .hero h1 { color: white; margin: 0 0 8px 0; font-size: 2.1rem; }
-        .hero p { color: #dce7df; margin: 0; max-width: 760px; }
+        section[data-testid="stSidebar"] * { color: #eaf3ed; }
+        section[data-testid="stSidebar"] .stSelectbox label,
+        section[data-testid="stSidebar"] .stTextInput label,
+        section[data-testid="stSidebar"] .stSlider label {
+          color: #eaf3ed !important;
+        }
+        .hero {
+          background:
+            radial-gradient(circle at 85% 15%, rgba(184,255,61,.25), transparent 28%),
+            linear-gradient(135deg, #07110d 0%, #10251a 72%, #163822 100%);
+          color: white; border-radius: 8px; padding: 34px 34px;
+          border: 1px solid #13221a; box-shadow: 0 18px 45px rgba(7,17,13,.20);
+        }
+        .hero h1 { color: white; margin: 0 0 10px 0; font-size: 2.35rem; line-height: 1.08; }
+        .hero p { color: #dce7df; margin: 0; max-width: 820px; font-size: 1.03rem; }
         .pill {
           display: inline-block; background: var(--accent); color: #07110d; border-radius: 999px;
           padding: 4px 10px; font-weight: 700; font-size: .78rem; margin-bottom: 14px;
         }
+        .step-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0 12px; }
+        .step-card {
+          background: #ffffff; border: 1px solid var(--line); border-radius: 8px; padding: 16px;
+          min-height: 112px;
+        }
+        .step-card strong { display:block; color:#07110d; margin-bottom: 6px; }
+        .step-card p { margin: 0; color: var(--muted); font-size: .92rem; }
+        .sidebar-title { font-size: 1.25rem; font-weight: 800; margin: .5rem 0 .15rem; color: white; }
+        .sidebar-muted { color: #b8c8bf; font-size: .9rem; line-height: 1.4; }
+        .side-box {
+          border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 12px 13px; margin: 12px 0;
+          background: rgba(255,255,255,.045);
+        }
+        .side-box strong { color: var(--accent); }
+        .side-box ul { padding-left: 18px; margin: 8px 0 0; }
+        .side-box li { margin-bottom: 5px; color: #e6eee9; }
+        .profile-links a {
+          display: inline-block; margin: 6px 8px 0 0; padding: 7px 10px; border-radius: 6px;
+          background: var(--accent); color: #07110d !important; text-decoration: none; font-weight: 800;
+        }
         .metric-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
         .metric-card strong { display: block; color: var(--muted); font-size: .78rem; text-transform: uppercase; }
         .metric-card span { color: var(--ink); font-size: 1.6rem; font-weight: 750; }
+        .report-frame {
+          border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: white;
+          box-shadow: 0 10px 28px rgba(7,17,13,.07);
+        }
+        .footer {
+          margin-top: 30px; padding: 18px 20px; border-top: 1px solid var(--line);
+          color: var(--muted); font-size: .92rem; text-align: center;
+        }
+        .footer a { color: #07110d; font-weight: 800; text-decoration: none; }
         .stButton > button, .stDownloadButton > button {
-          border-radius: 6px; border: 1px solid #07110d; background: #07110d; color: white; font-weight: 700;
+          border-radius: 6px; border: 1px solid #07110d; background: #07110d; color: white; font-weight: 800;
+          padding: .55rem 1rem;
         }
         .stButton > button:hover, .stDownloadButton > button:hover {
           border-color: #07110d; background: var(--accent); color: #07110d;
+        }
+        div[data-testid="stFileUploader"] {
+          background: #f9fbfa; border: 1px dashed #aab8af; border-radius: 8px; padding: 12px;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+          background: #ffffff; border-color: var(--line); box-shadow: 0 10px 28px rgba(7,17,13,.07);
+        }
+        @media (max-width: 900px) {
+          .step-grid { grid-template-columns: 1fr; }
+          .hero h1 { font-size: 1.8rem; }
         }
         </style>
         """,
@@ -147,36 +204,92 @@ def run_checker(pdf_path: Path, output_name: str, pages: str, mode: str, ocr: st
 
 
 inject_theme()
+
+with st.sidebar:
+    st.markdown('<div class="sidebar-title">P&P Checker</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sidebar-muted">Hybrid design checker for road Plan & Profile drawings.</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+        <div class="side-box">
+          <strong>What this tool does</strong>
+          <ul>
+            <li>Reads Plan & Profile PDF drawings.</li>
+            <li>Extracts design elements using OCR/vector parsing.</li>
+            <li>Runs IRC rule checks on extracted values.</li>
+            <li>Uses ML detections as visual support.</li>
+          </ul>
+        </div>
+        <div class="side-box">
+          <strong>Current limitations</strong>
+          <ul>
+            <li>ML detections are advisory, not ground truth.</li>
+            <li>Unclear OCR fields may become unknown/review items.</li>
+            <li>New consultant drawing formats need manual QA.</li>
+            <li>Large PDFs can take several minutes.</li>
+          </ul>
+        </div>
+        <div class="side-box">
+          <strong>Output</strong>
+          <ul>
+            <li>Public HTML report.</li>
+            <li>Full diagnostic ZIP.</li>
+            <li>Hidden ML detail tables in public view.</li>
+          </ul>
+        </div>
+        <div class="side-box">
+          <strong>Created by</strong><br>
+          <span class="sidebar-muted">Kaushlendra Kumar Verma</span>
+          <div class="profile-links">
+            <a href="https://kkvhub.github.io/" target="_blank">Portfolio</a>
+            <a href="https://www.linkedin.com/in/kaushlendra-kumar-verma/" target="_blank">LinkedIn</a>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 st.markdown(
     """
     <div class="hero">
-      <span class="pill">Plan & Profile - cropped ML route</span>
+      <span class="pill">Plan & Profile design review</span>
       <h1>Road Design Compliance Checker</h1>
-      <p>Upload a Plan & Profile PDF, run the cropped-variant hybrid checker, and download a public report with detailed ML diagnostic tables hidden.</p>
+      <p>Upload a road Plan & Profile PDF and generate an IRC-oriented design-check report. The app combines deterministic extraction, rule checks, and ML visual corroboration.</p>
     </div>
     """,
     unsafe_allow_html=True,
 )
-st.write("")
+
+st.markdown(
+    """
+    <div class="step-grid">
+      <div class="step-card"><strong>1. Upload Drawing</strong><p>Use a Plan & Profile PDF. You can run all pages or a selected page range for faster review.</p></div>
+      <div class="step-card"><strong>2. Run Checker</strong><p>The engine extracts curves, profile items, structures, and design values, then applies IRC checks.</p></div>
+      <div class="step-card"><strong>3. Review Output</strong><p>Download a clean public report or the full ZIP with detailed ML diagnostics and evidence files.</p></div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 missing = [path for path in (RUNNER, DEFAULT_MODEL, REPO_ROOT / "02_Tool" / "pp_checker") if not path.exists()]
 if missing:
     st.error("Deployment is missing required checker files:\n\n" + "\n".join(str(path) for path in missing))
     st.stop()
 
-left, right = st.columns([1.1, 0.9], gap="large")
-with left:
-    uploaded = st.file_uploader("Upload Plan & Profile PDF", type=["pdf"])
-    pages = st.text_input("Pages", value="all", help='Use "all" or ranges like 1-3,5.')
-    mode = st.selectbox("ML mode", ["color", "dual", "grayscale"], index=0)
-    ocr = st.selectbox("OCR mode", ["auto", "off", "required"], index=0)
-with right:
-    road_class = st.selectbox("Road class", ["2_lane", "4_lane"], index=0)
-    terrain = st.selectbox("Terrain", ["mountainous", "plain_rolling", "steep"], index=0)
-    ml_dpi = st.slider("ML DPI", min_value=100, max_value=600, value=220, step=20)
-    model_path = Path(st.text_input("Model checkpoint", value=str(DEFAULT_MODEL)))
+with st.container(border=True):
+    st.subheader("Run Configuration")
+    upload_col, settings_col = st.columns(2, gap="large")
+    with upload_col:
+        uploaded = st.file_uploader("Upload Plan & Profile PDF", type=["pdf"])
+        pages = st.text_input("Pages", value="all", help='Use "all" or ranges like 1-3,5.')
+    with settings_col:
+        road_class = st.selectbox("Road class", ["2_lane", "4_lane"], index=0)
+        terrain = st.selectbox("Terrain", ["mountainous", "plain_rolling", "steep"], index=0)
+        mode = st.selectbox("ML mode", ["color", "dual", "grayscale"], index=0)
 
-run_button = st.button("Run Cropped Checker", type="primary", disabled=uploaded is None)
+    run_button = st.button("Run Checker", type="primary", disabled=uploaded is None, use_container_width=True)
 
 if run_button and uploaded is not None:
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -185,20 +298,20 @@ if run_button and uploaded is not None:
     pdf_path.write_bytes(uploaded.getbuffer())
     output_name = f"streamlit_{timestamp}_{safe_stem(uploaded.name)}"
 
-    with st.status("Running cropped hybrid checker...", expanded=True) as status:
+    with st.status("Running design checker...", expanded=True) as status:
         st.write("Saving uploaded PDF")
-        st.write("Running deterministic extraction, IRC rules, and cropped ML diagnostics")
+        st.write("Running deterministic extraction, IRC rules, and ML diagnostics")
         try:
             output_dir, result, log_text = run_checker(
                 pdf_path=pdf_path,
                 output_name=output_name,
                 pages=pages,
                 mode=mode,
-                ocr=ocr,
+                ocr=DEFAULT_OCR_MODE,
                 road_class=road_class,
                 terrain=terrain,
-                ml_dpi=ml_dpi,
-                model_path=model_path,
+                ml_dpi=DEFAULT_ML_DPI,
+                model_path=DEFAULT_MODEL,
             )
         except Exception as exc:
             status.update(label="Checker failed", state="error")
@@ -214,10 +327,18 @@ if run_button and uploaded is not None:
             unsafe_allow_html=True,
         )
 
+    st.subheader("Result Summary")
+    meta1, meta2, meta3 = st.columns(3)
+    meta1.info(f"Horizontal curves: {len(result['engineering']['model'].get('curves', []))}")
+    meta2.info(f"Vertical curves: {len(result['engineering']['model'].get('vertical_curves', []))}")
+    meta3.info(f"Structures: {len(result['engineering']['model'].get('structures', []))}")
+
     st.subheader("Public Report")
     public_report = output_dir / "public_report.html"
     zip_path = output_dir.with_suffix(".zip")
+    st.markdown('<div class="report-frame">', unsafe_allow_html=True)
     st.components.v1.html(public_report.read_text(encoding="utf-8"), height=900, scrolling=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     d1, d2 = st.columns(2)
     d1.download_button(
@@ -235,3 +356,14 @@ if run_button and uploaded is not None:
 
     with st.expander("Run log"):
         st.code(log_text[-6000:] if log_text else "No log text captured.")
+
+st.markdown(
+    """
+    <div class="footer">
+      Built by <strong>Kaushlendra Kumar Verma</strong> -
+      <a href="https://kkvhub.github.io/" target="_blank">Portfolio</a> -
+      <a href="https://www.linkedin.com/in/kaushlendra-kumar-verma/" target="_blank">LinkedIn</a>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
