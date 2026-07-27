@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import importlib.util
 import json
 import os
 import re
@@ -23,6 +24,14 @@ OUTPUT_ROOT = CV_ROOT / "outputs" / "streamlit_cropper_runs"
 DEFAULT_MODEL = CV_ROOT / "plan_profile_curve_table_results" / "runs" / "retrain_v2_yolo11n_1280" / "weights" / "best.pt"
 DEFAULT_OCR_MODE = "auto"
 DEFAULT_ML_DPI = 400
+REQUIRED_PYTHON_MODULES = {
+    "cv2": "opencv-python-headless",
+    "fitz": "PyMuPDF",
+    "numpy": "numpy",
+    "PIL": "pillow",
+    "torch": "torch",
+    "ultralytics": "ultralytics",
+}
 
 
 st.set_page_config(page_title="P&P Design Checker", layout="wide")
@@ -152,6 +161,14 @@ def safe_stem(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "_", stem).strip("_")[:60] or "uploaded_drawing"
 
 
+def missing_python_packages() -> list[str]:
+    return [
+        package
+        for module, package in REQUIRED_PYTHON_MODULES.items()
+        if importlib.util.find_spec(module) is None
+    ]
+
+
 def run_checker(pdf_path: Path, output_name: str, pages: str, mode: str, ocr: str,
                 road_class: str, terrain: str, ml_dpi: int, model_path: Path) -> tuple[Path, dict, str]:
     output_dir = OUTPUT_ROOT / output_name
@@ -175,6 +192,7 @@ def run_checker(pdf_path: Path, output_name: str, pages: str, mode: str, ocr: st
         "--road-class", road_class,
         "--terrain", terrain,
         "--engineering-source", "auto",
+        "--allow-no-tesseract",
         "--ml-dpi", str(ml_dpi),
         "--model", str(model_path),
         "--output", str(output_dir),
@@ -278,6 +296,15 @@ if missing:
     st.error("Deployment is missing required checker files:\n\n" + "\n".join(str(path) for path in missing))
     st.stop()
 
+missing_packages = missing_python_packages()
+if missing_packages:
+    st.error(
+        "Deployment is missing required Python packages:\n\n"
+        + "\n".join(f"- {package}" for package in missing_packages)
+        + "\n\nCheck `requirements.txt`, then reboot/redeploy the Streamlit app."
+    )
+    st.stop()
+
 with st.container(border=True):
     st.subheader("Run Configuration")
     upload_col, settings_col = st.columns(2, gap="large")
@@ -314,8 +341,10 @@ if run_button and uploaded is not None:
                 model_path=DEFAULT_MODEL,
             )
         except Exception as exc:
-            status.update(label="Checker failed", state="error")
-            st.error(str(exc))
+            status.update(label="Checker failed", state="error", expanded=True)
+            error_text = str(exc).strip() or repr(exc)
+            st.error("Checker failed. The technical log below shows the exact cause.")
+            st.code(error_text[-12000:], language="text")
             st.stop()
         status.update(label="Checker complete", state="complete")
 
