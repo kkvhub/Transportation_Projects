@@ -123,11 +123,19 @@ def inject_theme() -> None:
           color: var(--muted); font-size: .92rem; text-align: center;
         }
         .footer a { color: #07110d; font-weight: 800; text-decoration: none; }
-        .stButton > button, .stDownloadButton > button {
+        .stButton > button {
+          border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #07110d;
+          font-weight: 900; padding: .55rem 1rem; box-shadow: 0 0 0 1px rgba(184,255,61,.35), 0 10px 24px rgba(184,255,61,.28);
+        }
+        .stDownloadButton > button {
           border-radius: 6px; border: 1px solid #07110d; background: #07110d; color: white; font-weight: 800;
           padding: .55rem 1rem;
         }
-        .stButton > button:hover, .stDownloadButton > button:hover {
+        .stButton > button:hover {
+          border-color: #07110d; background: #d7ff75; color: #07110d;
+          box-shadow: 0 0 0 1px rgba(184,255,61,.65), 0 14px 30px rgba(184,255,61,.36);
+        }
+        .stDownloadButton > button:hover {
           border-color: #07110d; background: var(--accent); color: #07110d;
         }
         .stButton > button:disabled {
