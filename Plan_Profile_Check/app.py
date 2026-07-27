@@ -55,6 +55,19 @@ def inject_theme() -> None:
         .stApp { background: #eef5f0; color: var(--ink); }
         .block-container { padding-top: 1.4rem; max-width: 1240px; }
         h1, h2, h3 { color: var(--ink); letter-spacing: 0 !important; }
+        div[data-testid="stAppViewContainer"] label,
+        div[data-testid="stAppViewContainer"] label p,
+        div[data-testid="stAppViewContainer"] .stTextInput label,
+        div[data-testid="stAppViewContainer"] .stSelectbox label,
+        div[data-testid="stAppViewContainer"] .stFileUploader label {
+          color: var(--ink) !important;
+          font-weight: 750 !important;
+        }
+        div[data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
+        div[data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"] p,
+        div[data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"] p {
+          color: var(--ink) !important;
+        }
         section[data-testid="stSidebar"] {
           background: #07110d;
           border-right: 1px solid #13221a;
@@ -117,8 +130,20 @@ def inject_theme() -> None:
         .stButton > button:hover, .stDownloadButton > button:hover {
           border-color: #07110d; background: var(--accent); color: #07110d;
         }
+        .stButton > button:disabled {
+          background: #dbe5df !important;
+          border-color: #aab8af !important;
+          color: #5e6a64 !important;
+          opacity: 1 !important;
+        }
         div[data-testid="stFileUploader"] {
           background: #f9fbfa; border: 1px dashed #aab8af; border-radius: 8px; padding: 12px;
+        }
+        div[data-testid="stFileUploader"] *,
+        div[data-testid="stFileUploader"] small,
+        div[data-testid="stFileUploader"] span,
+        div[data-testid="stFileUploader"] p {
+          color: var(--ink) !important;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
           background: #ffffff; border-color: var(--line); box-shadow: 0 10px 28px rgba(7,17,13,.07);
