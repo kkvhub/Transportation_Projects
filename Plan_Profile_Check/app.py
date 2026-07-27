@@ -210,6 +210,23 @@ def missing_python_packages() -> list[str]:
     ]
 
 
+def tesseract_available() -> bool:
+    configured = os.environ.get("TESSERACT_CMD")
+    if configured and Path(configured).is_file():
+        return True
+    if shutil.which("tesseract"):
+        return True
+    for candidate in (
+        Path("/usr/bin/tesseract"),
+        Path("/usr/local/bin/tesseract"),
+        Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe"),
+        Path(r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"),
+    ):
+        if candidate.is_file():
+            return True
+    return False
+
+
 def run_checker(pdf_path: Path, output_name: str, pages: str, mode: str, ocr: str,
                 road_class: str, terrain: str, ml_dpi: int, model_path: Path) -> tuple[Path, dict, str]:
     output_dir = OUTPUT_ROOT / output_name
@@ -242,7 +259,6 @@ def run_checker(pdf_path: Path, output_name: str, pages: str, mode: str, ocr: st
         "--road-class", road_class,
         "--terrain", terrain,
         "--engineering-source", "auto",
-        "--allow-no-tesseract",
         "--ml-dpi", str(ml_dpi),
         "--model", str(model_path),
         "--output", str(output_dir),
@@ -352,6 +368,15 @@ if missing_packages:
         "Deployment is missing required Python packages:\n\n"
         + "\n".join(f"- {package}" for package in missing_packages)
         + "\n\nCheck `requirements.txt`, then reboot/redeploy the Streamlit app."
+    )
+    st.stop()
+
+if not tesseract_available():
+    st.error(
+        "Deployment is missing the Tesseract OCR executable.\n\n"
+        "This checker needs Tesseract for BAMI-style CAD/stroke-font drawings. "
+        "Make sure `packages.txt` is at the deployed app root and contains `tesseract-ocr`, "
+        "then reboot/redeploy the Streamlit app."
     )
     st.stop()
 
