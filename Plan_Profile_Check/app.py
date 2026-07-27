@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import zipfile
 from pathlib import Path
@@ -24,6 +25,7 @@ OUTPUT_ROOT = CV_ROOT / "outputs" / "streamlit_cropper_runs"
 DEFAULT_MODEL = CV_ROOT / "plan_profile_curve_table_results" / "runs" / "retrain_v2_yolo11n_1280" / "weights" / "best.pt"
 DEFAULT_OCR_MODE = "auto"
 DEFAULT_ML_DPI = 400
+CACHE_ROOT = Path(tempfile.gettempdir()) / "pp_checker_cache"
 REQUIRED_PYTHON_MODULES = {
     "cv2": "opencv-python-headless",
     "fitz": "PyMuPDF",
@@ -175,8 +177,17 @@ def run_checker(pdf_path: Path, output_name: str, pages: str, mode: str, ocr: st
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    for cache_dir in (
+        CACHE_ROOT / "Ultralytics",
+        CACHE_ROOT / "matplotlib",
+        CACHE_ROOT / "torch",
+    ):
+        cache_dir.mkdir(parents=True, exist_ok=True)
 
     env = os.environ.copy()
+    env.setdefault("YOLO_CONFIG_DIR", str(CACHE_ROOT / "Ultralytics"))
+    env.setdefault("MPLCONFIGDIR", str(CACHE_ROOT / "matplotlib"))
+    env.setdefault("TORCH_HOME", str(CACHE_ROOT / "torch"))
     env["PYTHONPATH"] = os.pathsep.join([
         str(CV_ROOT / "ml_prototype"),
         str(REPO_ROOT / "02_Tool"),
