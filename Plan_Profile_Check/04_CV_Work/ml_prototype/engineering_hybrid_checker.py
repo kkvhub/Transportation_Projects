@@ -51,6 +51,8 @@ def original_checker():
 
 
 def fixtures() -> list[dict]:
+    if not REGRESSION_CONFIG.is_file():
+        return []
     return json.loads(REGRESSION_CONFIG.read_text(encoding="utf-8"))["fixtures"]
 
 
