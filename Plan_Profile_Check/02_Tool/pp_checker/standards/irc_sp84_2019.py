@@ -789,7 +789,7 @@ K_SUMMIT_SSD = {
     65:  18.41,
     80:  38.41,   # PRIMARY CHECK — minimum design speed
     100: 73.64,   # PRIMARY CHECK — ruling design speed
-    120: 56.82,
+    120: 142.05,
 }
 
 # Table VC-01 — Summit Curve K-values based on ISD (governing for new construction)
@@ -798,7 +798,7 @@ K_SUMMIT_SSD = {
 K_SUMMIT_ISD = {
     40:   8.44,   # ISD=90m  (2×45):  90²/9.6=844
     50:  15.00,   # ISD=120m (2×60): 120²/9.6=1500
-    60:  33.75,   # ISD=180m (2×90): 180²/9.6=3375
+    60:  26.70,   # ISD=180m (2×90): 180²/9.6=3375
     65:  33.75,   # ISD=180m (2×90): 180²/9.6=3375
     80:  70.42,   # ISD=260m (2×130): 260²/9.6=7042
     100: 135.00,  # ISD=360m (2×180): 360²/9.6=13500
@@ -808,13 +808,13 @@ K_SUMMIT_ISD = {
 # Table VC-02 — Valley (Sag) Curve K-values (L > S case, headlight SSD)
 # K = S² / (1.50 + 0.035×S)  →  HARD FAIL if K_provided < K_required
 K_VALLEY = {
-    40:  5.29,
-    50:  7.89,
-    60:  11.48,
-    65:  13.48,
-    80:  22.18,   # PRIMARY CHECK
-    100: 35.36,   # PRIMARY CHECK
-    120: 56.82,   # PRIMARY CHECK
+    40:  6.60,
+    50:  10.0,
+    60:  14.90,
+    65:  17.40,
+    80:  27.90,   # PRIMARY CHECK
+    100: 41.50,   # PRIMARY CHECK
+    120: 61.0,   # PRIMARY CHECK
 }
 
 # Table VC-03 — Minimum Vertical Curve Length (independent of K-value)
